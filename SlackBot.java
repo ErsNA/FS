@@ -31,15 +31,13 @@ public class SlackBot {
     public static final String src = "https://portal.dragda.com/";//"https://xhtra.free2durian.com/";
     public static final SimpleDateFormat panelDateFormat = new SimpleDateFormat("yyyy-MM-dd");
     public static final DecimalFormat decimalFormat = new DecimalFormat("###,###.##");
-    private static Set<String> respondedMessages = new HashSet<>();
 
     public static void main(String[] args) throws Exception {
         FS.createTables();
         Cookie = Files.readString(Paths.get("Cookie.txt"));
         UserAgent = Files.readString(Paths.get("UE.txt"));
-        String botToken = "xoxb-4670198736676-6295982161922-mv4ssdEkzLzIN3uUJrtDFDMd"; // Slack App Management'tan alınan bot token'ı
-        String appToken = "xapp-1-A068SCG3RM2-6298464644852-3ded854f88dd64385a287b2f97df84ee42e8f16ba3f232ee7c876342f51cbafd"; // Slack App Management'tan alınan bot token'ı
-        respondedMessages = readSetFromFile();
+        String botToken = "-";
+        String appToken = "-";
         App app = new App(AppConfig.builder().singleTeamBotToken(botToken).build());
         Logger.getLogger(App.class.getName()).setLevel(Level.ALL);
         app.message("", (payload, ctx) -> {
@@ -55,8 +53,8 @@ public class SlackBot {
                 return ctx.ack();
             }
             if (isStringInt(userID) && userID.length() == 7) {
-                switch (channelId) {
-                    case "C0692PFSG1X" -> {
+                switch (ch) {
+                    case "x" -> {
                         client.reactionsAdd(r -> r.channel(channelId).timestamp(threadTs).name("eyes"));
                         FreeSpinContract contract = new FreeSpinContract();
                         contract.setToday(panelDateFormat.format(new Date()));
@@ -75,7 +73,6 @@ public class SlackBot {
                     }
                 }
             }
-            respondedMessages.add(threadTs);
             writeSetToFile((HashSet<String>) respondedMessages);
             return ctx.ack();
         });
@@ -92,42 +89,6 @@ public class SlackBot {
         } catch (NumberFormatException ex) {
             return false;
         }
-    }
-
-    public static void CookieRefresher(String SetCookie) throws IOException {
-        String yeniauth = SetCookie.replace("path=/; HttpOnly; SameSite=Lax", "").replace(".ASPXAUTH", " .ASPXAUTH").replace("; ", "");
-        for (String satir : Cookie.split(";")) {
-            if (satir.contains("ASPXAUTH")) {
-                if (yeniauth.contains("ASPXAUTH")) {
-                    Cookie = Cookie.replace(satir, yeniauth);
-                    System.out.println("Cookie Yenilendi");
-                    BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("Cookie.txt"));
-                    bufferedWriter.write(Cookie);
-                    bufferedWriter.close();
-                    return;
-                }
-            }
-        }
-    }
-
-    private static void writeSetToFile(HashSet<String> set) {
-        try (ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream("mySet.json"))) {
-            outputStream.writeObject(set);
-            System.out.println("HashSet dosyaya yazıldı.");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static HashSet<String> readSetFromFile() {
-        HashSet<String> set = new HashSet<>();
-        try (ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream("mySet.json"))) {
-            set = (HashSet<String>) inputStream.readObject();
-            System.out.println("HashSet dosyadan okundu.");
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        return set;
     }
 
     private static Date date(int Date) {
@@ -168,8 +129,6 @@ public class SlackBot {
                 if (httpURLConnection.getHeaderField("Set-Cookie") != null) {
                     CookieRefresher(httpURLConnection.getHeaderField("Set-Cookie"));
                 }
-            } else {
-                System.out.println("refresher çalışırken bir sorun ile karşılaştı");
             }
         } catch (Exception e) {
             e.printStackTrace();
