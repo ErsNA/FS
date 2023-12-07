@@ -37,21 +37,10 @@ public class FS {
     public static SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
     public static String NoFs = "'Kredi kartı ile ile Yatırma','SimpleKK Yatırma','Kredi Karti ile Yatırma','SimpleKK ile Yatırma','Aninda Kredi Karti ile Yatırma','FlexCreditCard ile Yatırma'";
 
-    public static void testDelete() {
-        try {
-            conn = new ObjectHelper().getConnection();
-            Statement stmt = conn.createStatement();
-            long time = simpleDateFormat.parse("12/6/2023 19:27:31").getTime();
-            stmt.executeUpdate("DELETE FROM Yatırım where dateOf>" + time);
-        } catch (SQLException | ParseException e) {
-            throw new RuntimeException(e);
-        }
-    }
     public static JSONObject start(FreeSpinContract contract) throws IOException {
         JSONObject jsonObject = new JSONObject();
         StringBuilder builder = new StringBuilder();
         builder.append("Üye No:   ").append(contract.getUserID());
-        Delete();
         double totalrecord = Deposit(contract, 0);
         int sayi = (int) Math.ceil((totalrecord / 8000));
         for (int i = 0; i < sayi; i++) {
@@ -62,7 +51,6 @@ public class FS {
         DepositHesapla(contract);
         if (contract.isKrediKarti()) {
             builder.append("\nİki yatırım birleştirilirse hakkı var arada oyun oynamamış.");
-            jsonObject.put("copy", "Kredi kartı yatırımlarına FreeSpin bonusu tanımlanmamaktadır. Farklı bir yöntem ile minimum 250 TL yatırım yaptıktan sonra canlı destek hattına bağlanarak Freespin talebinde bulunabilirsiniz.");
         } else if (contract.isPesPeseYatirim()) {
             builder.append("\nBugüne ait yatırımı yok");
             jsonObject.put("copy", "Son yatırım: " + decimalFormat.format(contract.getLastDeposit()) + "\n Bir önceki yatırım: " + decimalFormat.format(contract.getSecondDeposit()));
@@ -77,7 +65,6 @@ public class FS {
                 } else {
                     FsSorgulaYeni(contract);
                     FsHesapla(contract);
-
                     if (contract.getAlinanFs() <= 5) {
                         builder.append("\nBugün eklenen toplam:\t").append(contract.getAlinanFs());
                         builder.append("\nSon Hakkı:\t").append(contract.getFsTutar()).append(" TRY ").append(contract.getFsHakki()).append(" FS");
@@ -87,7 +74,6 @@ public class FS {
                             } else {
                                 jsonObject.put("copy", contract.getFsTutar() + " TRY " + contract.getFsHakki() + " FS hakkı var.\nEKLEME YAPILAMADI!!!");
                             }
-//                            jsonObject.put("copy", "Üyeye cevap:\n\nSon Hakkı:\t" + contract.getFsHakki() + "\nSpin Değeri:\t" + contract.getFsTutar());
                         } else {
                             builder.append("\nBugünkü yatırımları için tüm hakları eklenmiş.");
                             jsonObject.put("copy", "Bugüne ait yatırımlarınız karşılığında bütün freespin haklarınızı almışsınız. Yeni yatırım yaptıktan sonra tekrar talepte bulunabilirsiniz.");
@@ -129,24 +115,13 @@ public class FS {
             Elements profile = doc.getElementsByClass("form-group");
             for (Element element : profile) {
                 String key = element.text();
-                String value = element.getElementsByClass("player-rank-input").attr("value");
+                String value = element.getElementsByClass("input").attr("value");
                 if (key.equals("Statü")) {
                     contract.setRank(value);
                 }
             }
         } else {
             out.println("GET request not worked");
-        }
-    }
-
-    public static void Delete() {
-        try {
-            conn = new ObjectHelper().getConnection();
-            Statement stmt = conn.createStatement();
-            stmt.executeUpdate("DELETE FROM FreeSpin");
-            stmt.executeUpdate("DELETE FROM Yatırım");
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
     }
 
@@ -210,9 +185,6 @@ public class FS {
             Statement stmt = conn.createStatement();
             stmt.executeUpdate("INSERT INTO Yatırım (types, amount, dateOf) VALUES" + degerler);
             stmt.executeUpdate("DELETE FROM `Yatırım` where types like '%Bonus ile Yatırma From Admin%' or types like '%Jeton%' or types like '%P2P%'");
-
-//            stmt.executeUpdate("DELETE FROM `Yatırım` where dateOf>"+new SimpleDateFormat("MM/dd/yyyy HH:mm:ss").parse("12/5/2023 00:38:55").getTime());
-//            stmt.executeUpdate("DELETE FROM `Yatırım` where dateOf>" + new SimpleDateFormat("MM/dd/yyyy HH:mm:ss").parse("12/05/2023 01:44:07").getTime());
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
