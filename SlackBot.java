@@ -5,7 +5,6 @@ import com.slack.api.bolt.AppConfig;
 import com.slack.api.bolt.socket_mode.SocketModeApp;
 import com.slack.api.methods.MethodsClient;
 import com.slack.api.model.event.MessageEvent;
-import dmn.FS.FS;
 import dmn.FS.FreeSpinContract;
 import net.sf.json.JSONObject;
 
@@ -28,7 +27,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class SlackBot {
     public static String Cookie;
     public static String UserAgent;
-    public static final String src = "https://portal.dragda.com/";//"https://xhtra.free2durian.com/";
+    public static final String src;
     public static final SimpleDateFormat panelDateFormat = new SimpleDateFormat("yyyy-MM-dd");
     public static final DecimalFormat decimalFormat = new DecimalFormat("###,###.##");
 
